@@ -13,7 +13,7 @@ Berikut adalah template README.md versi Go untuk proyek CSV Splitter:
 
 📸 Screenshot
 
-(Tambahkan screenshot tampilan aplikasinya biar menarik! 🚀)
+<img width="597" alt="image" src="https://github.com/user-attachments/assets/62f38fa8-c097-4609-8156-7c5e957d071d" />
 
 🛠️ Tech Stack
 	•	Go 1.18+
