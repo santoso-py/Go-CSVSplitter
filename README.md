@@ -1,5 +1,3 @@
-Berikut adalah template README.md versi Go untuk proyek CSV Splitter:
-
 🚀 CSV Splitter with Go – Fast & Simple
 
 📌 Aplikasi desktop untuk membagi file CSV berdasarkan kolom tertentu, dibangun menggunakan Go dan Fyne untuk antarmuka grafis yang simpel dan responsif.
