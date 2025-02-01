@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -13,28 +14,30 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/xuri/excelize/v2"
 )
-
+// UInya masih ADA PR di tulisan yang tidak terbaca, entah kenapa, harap maklum baru belajar 2 hari
 func main() {
-	// Set environment variable to use software rendering
-	os.Setenv("FYNE_RENDERER", "software")
+	// Check  FYNE_RENDERER 
+	if os.Getenv("FYNE_RENDERER") == "" {
+		os.Setenv("FYNE_RENDERER", "software")
+	}
 
 	a := app.NewWithID("com.sanrui.splitter")
 	w := a.NewWindow("CSV Splitter - Modern 2025")
 
-	// Label untuk menunjukkan instruksi
-	label := widget.NewLabel("Pilih file CSV untuk di-split berdasarkan kolom")
+	// label pemilihan kolom
+	label := widget.NewLabelWithStyle("Pilih file CSV untuk di-split berdasarkan kolom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 
-	// Entry untuk path file CSV
+	// entry file csv
 	csvPathEntry := widget.NewEntry()
 	csvPathEntry.SetPlaceHolder("File CSV Path")
 	csvPathEntry.Disable()
 
-	// ComboBox untuk memilih kolom
+	// ComboBox untuk kolom
 	columnSelector := widget.NewSelect([]string{}, func(selected string) {
 		fmt.Println("Kolom yang dipilih:", selected)
 	})
 
-	// Tombol untuk browse file CSV
+	// Button untuk pilih file
 	browseCSVButton := widget.NewButton("Browse", func() {
 		dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
 			if err != nil {
@@ -48,8 +51,12 @@ func main() {
 			defer r.Close()
 
 			filePath := r.URI().Path()
+			if !strings.HasSuffix(filePath, ".csv") {
+				dialog.ShowError(fmt.Errorf("file bukan CSV"), w)
+				return
+			}
 			csvPathEntry.SetText(filePath)
-			// Load columns from CSV file
+			// load kolom dari dataset
 			columns, err := loadCSVColumns(filePath)
 			if err != nil {
 				dialog.ShowError(err, w)
@@ -59,12 +66,12 @@ func main() {
 		}, w).Show()
 	})
 
-	// Entry untuk path folder hasil
+	// entry
 	folderPathEntry := widget.NewEntry()
 	folderPathEntry.SetPlaceHolder("Folder Path for Results")
 	folderPathEntry.Disable()
 
-	// Tombol untuk browse folder
+	// Button pilih folder
 	browseFolderButton := widget.NewButton("Browse", func() {
 		dialog.NewFolderOpen(func(r fyne.ListableURI, err error) {
 			if err != nil || r == nil {
@@ -78,11 +85,11 @@ func main() {
 	// Progress bar
 	progressBar := widget.NewProgressBar()
 
-	// Log text
+	// Log text masih kurang terbaca maap yak gess
 	logText := widget.NewMultiLineEntry()
 	logText.Disable()
 
-	// Tombol untuk memproses data
+	// Button untuk process data
 	processButton := widget.NewButton("Process Data", func() {
 		fileCSVPath := csvPathEntry.Text
 		folderPath := folderPathEntry.Text
@@ -102,7 +109,7 @@ func main() {
 		dialog.ShowInformation("Success", "All processes completed successfully!", w)
 	})
 
-	// Set konten window
+	// Set window content
 	w.SetContent(container.NewVBox(
 		label,
 		csvPathEntry,
@@ -115,10 +122,11 @@ func main() {
 		processButton,
 	))
 
-	// Menampilkan window
+	// Show window
 	w.ShowAndRun()
 }
 
+// batas
 func loadCSVColumns(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -135,10 +143,12 @@ func loadCSVColumns(filePath string) ([]string, error) {
 	return records, nil
 }
 
+// proses di mulai
+
 func processData(fileCSVPath, folderPath, columnName string, progressBar *widget.ProgressBar, logText *widget.Entry) error {
 	file, err := os.Open(fileCSVPath)
 	if err != nil {
-		return fmt.Errorf("gagal membuka file: %v", err) //moga ga gagal lagi
+		return fmt.Errorf("gagal membuka file: %v", err)
 	}
 	defer file.Close()
 
@@ -161,12 +171,16 @@ func processData(fileCSVPath, folderPath, columnName string, progressBar *widget
 	}
 
 	splitData := make(map[string][][]string)
+	header := rows[0]
 	for i, row := range rows {
 		if i == 0 {
 			continue
 		}
 		if columnIndex < len(row) {
 			key := row[columnIndex]
+			if _, exists := splitData[key]; !exists {
+				splitData[key] = append(splitData[key], header) // Add header to each split file
+			}
 			splitData[key] = append(splitData[key], row)
 		}
 	}
@@ -176,18 +190,15 @@ func processData(fileCSVPath, folderPath, columnName string, progressBar *widget
 	logText.SetText("Starting the splitting process...\n")
 
 	for key, rows := range splitData {
-		filePath := filepath.Join(folderPath, fmt.Sprintf("%s.xlsx", key))
+		// Sanitize the key to prevent directory traversal
+		sanitizedKey := filepath.Base(key)
+		filePath := filepath.Join(folderPath, fmt.Sprintf("%s.xlsx", sanitizedKey))
 		f := excelize.NewFile()
 		sheet := "Sheet1"
 
-		for colIndex, columnName := range rows[0] {
-			cell := fmt.Sprintf("%c1", 'A'+colIndex)
-			f.SetCellValue(sheet, cell, columnName)
-		}
-
 		for rowIndex, row := range rows {
 			for colIndex, cell := range row {
-				cellName := fmt.Sprintf("%c%d", 'A'+colIndex, rowIndex+2)
+				cellName := fmt.Sprintf("%c%d", 'A'+colIndex, rowIndex+1)
 				f.SetCellValue(sheet, cellName, cell)
 			}
 		}
