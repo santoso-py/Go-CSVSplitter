@@ -22,7 +22,7 @@
 
 1️⃣ Clone Repository
 
-git clone https://github.com/MasSan/Go-CSVSplitter.git
+git clone https://github.com/santoso-py/Go-CSVSplitter.git
 cd Go-CSVSplitter
 
 2️⃣ Install Dependencies
