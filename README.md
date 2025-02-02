@@ -5,8 +5,11 @@
 ✨ Fitur Utama
 
 ✅ UI responsif dengan Fyne, antarmuka sederhana dan modern
+
 ✅ Membagi file CSV berdasarkan kolom yang dipilih
+
 ✅ Menyimpan hasil split dalam folder yang dipilih pengguna
+
 ✅ Proses cepat dan efisien tanpa menguras memori
 
 📸 Screenshot
@@ -41,8 +44,11 @@ go build -o Go-CSVSplitter
 🔥 Cara Penggunaan
 
 1️⃣ Pilih file CSV yang ingin dibagi
+
 2️⃣ Pilih kolom untuk membagi data
+
 3️⃣ Pilih folder untuk menyimpan file hasil split
+
 4️⃣ Klik “Process” dan tunggu hingga selesai 🎉
 
 📜 Lisensi
